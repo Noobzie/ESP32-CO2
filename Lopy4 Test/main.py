@@ -19,7 +19,7 @@ def main():
 
     eCO2Readings = readSensor()
     TVOCReadings = readSensor()
-    reading = reading(getId(), eCO2Readings, TVOCReadings)
+    reading = reading(getHardwareId(), eCO2Readings, TVOCReadings)
     print(json.dumps(reading.__dict__))
     # i2c = I2C(0, pins=('P9','P10'))     # create and use non-default PIN assignments (P10=SDA, P11=SCL)
     # i2c.init(I2C.MASTER, baudrate=20000) # init as a master
@@ -56,7 +56,7 @@ def readSensor():
         eCO2Readings.append(RandomNumbers.RandomNumbers())
     return eCO2Readings
 
-def getId():
+def getHardwareId():
     return ubinascii.hexlify(machine.unique_id()).decode('utf-8')
     
 main()
