@@ -25,6 +25,7 @@ class CCS811(object):
         # Check if sensor is vailable at i2c bus address
         print('Scan i2c devices')
         devices = i2c.scan()
+        print(len(devices))
         print('Done scanning')
         for device in devices:  
             print("Decimal address: ",device," | Hexa address: ",hex(device))
