@@ -26,25 +26,32 @@ def main():
     
     # print(i2c.scan())
     # i2c.deinit()                         # turn off the peripheral
-    # wlan = WLAN()
-    # wlan = WLAN(mode=WLAN.STA)
-    # nets = wlan.scan()
-    # for net in nets:
-    #     print(net.ssid)
-    #     if net.ssid == 'LoraNet':
-    #         print('Network found!')
-    #         wlan.connect(net.ssid, auth=(net.sec, '12345678'), timeout=5000)
-    #         while not wlan.isconnected():
-    #             machine.idle() # save power while waiting
-    #         print('WLAN connection succeeded!')
-    #         print(wlan.ifconfig())
-    #         break
+    wlan = WLAN()
+    wlan = WLAN(mode=WLAN.STA)
+    nets = wlan.scan()
+    for net in nets:
+        print(net.ssid)
+        if net.ssid == 'LoraNet':
+            print('Network found!')
+            wlan.connect(net.ssid, auth=(net.sec, '12345678'), timeout=5000)
+            while not wlan.isconnected():
+                machine.idle() # save power while waiting
+            print('WLAN connection succeeded!')
+            print(wlan.ifconfig())
+            break
 
-    # r = requests.request("GET", 'http://192.168.1.87:4040/OpenDB')
-    # print(r)
-    # print(r.content)
-    # print(r.text)
-    # r.close()
+    r = requests.request("GET", 'http://192.168.178.115:4040/OpenDB')
+    print(r)
+    print(r.content)
+    print(r.text)
+
+    print('http://192.168.178.115:4040/4key=' + getHardwareId())
+    r = requests.request("GET", 'http://192.168.178.115:4040/4key=' + getHardwareId())
+    print(r)
+    print(r.content)
+    print(r.text)
+
+    r.close()
 
     
 
