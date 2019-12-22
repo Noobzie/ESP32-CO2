@@ -1,4 +1,4 @@
-#from machine import I2C
+from machine import I2C
 import urequests as requests
 from network import WLAN
 import RandomNumbers
@@ -7,6 +7,9 @@ import json
 import machine
 import ubinascii
 #import adafruit_ccs811
+from time import sleep
+import Adafruit_CCS811
+import CCS811
 
     
 def main():
@@ -17,53 +20,67 @@ def main():
             self.TVOC = TVOC
 
 
-    eCO2Readings = readSensor()
-    TVOCReadings = readSensor()
-    reading = reading(getHardwareId(), eCO2Readings, TVOCReadings)
-    print(json.dumps(reading.__dict__))
-    # i2c = I2C(0, pins=('P9','P10'))     # create and use non-default PIN assignments (P10=SDA, P11=SCL)
-    # i2c.init(I2C.MASTER, baudrate=20000) # init as a master
+    readings = readSensor()
+    #reading = reading(getHardwareId(), readings)
+    print(json.dumps(readings))
     
-    # print(i2c.scan())
-    # i2c.deinit()                         # turn off the peripheral
-    wlan = WLAN()
-    wlan = WLAN(mode=WLAN.STA)
-    nets = wlan.scan()
-    for net in nets:
-        print(net.ssid)
-        if net.ssid == 'LoraNet':
-            print('Network found!')
-            wlan.connect(net.ssid, auth=(net.sec, '12345678'), timeout=5000)
-            while not wlan.isconnected():
-                machine.idle() # save power while waiting
-            print('WLAN connection succeeded!')
-            print(wlan.ifconfig())
-            break
 
-    r = requests.request("GET", 'http://192.168.178.115:4040/OpenDB')
-    print(r)
-    print(r.content)
-    print(r.text)
+    # wlan = WLAN()
+    # wlan = WLAN(mode=WLAN.STA)
+    # nets = wlan.scan()
+    # for net in nets:
+    #     print(net.ssid)
+    #     if net.ssid == 'LoraNet':
+    #         print('Network found!')
+    #         wlan.connect(net.ssid, auth=(net.sec, '12345678'), timeout=5000)
+    #         while not wlan.isconnected():
+    #             machine.idle() # save power while waiting
+    #         print('WLAN connection succeeded!')
+    #         print(wlan.ifconfig())
+    #         break
 
-    print('http://192.168.178.115:4040/4key=' + getHardwareId())
-    r = requests.request("GET", 'http://192.168.178.115:4040/4key=' + getHardwareId())
-    print(r)
-    print(r.content)
-    print(r.text)
+    # deviceId = getDeviceId()
 
-    r.close()
 
     
 
 def readSensor():
     i = 0
     eCO2Readings = []
-    while(i < 100):
-        i = i + 1
-        eCO2Readings.append(RandomNumbers.RandomNumbers())
-    return eCO2Readings
+    TVOCReadings = []
+    i2c = I2C(0, pins=('P9','P10'))     # create and use non-default PIN assignments (P10=SDA, P11=SCL)
+    i2c.init(I2C.MASTER, baudrate=20000) # init as a master
+    
+    s = CCS811.CCS811(i2c=i2c, addr=90)
+    time.sleep(1)
+    counter = 0
+    while (counter < 10):
+        if s.data_ready():
+            print('eCO2: %d ppm, TVOC: %d ppb' % (s.eCO2, s.tVOC))
+            eCO2Readings.append(s.eCO2)
+            TVOCReadings.append(s.tVOC)
+            time.sleep(1)
+            counter = counter + 1
+
+    i2c.deinit()                         # turn off the peripheral
+    readings = [eCO2Readings, TVOCReadings]
+    return readings
 
 def getHardwareId():
     return ubinascii.hexlify(machine.unique_id()).decode('utf-8')
+
+def getDeviceId():
+    hardWareId = {"hardwareId": getHardwareId()}
+    hardwareIdJson = json.dumps(hardWareId)
+    print(hardwareIdJson)
+    r = requests.request("GET", 'http://192.168.178.115:4040/deviceid', hardwareIdJson, True)
+    print(r)
+    print(r.content)
+    print(r.text)
+    deviceId = r.text
+    r.close()
+    return deviceId
     
+
+
 main()

@@ -8,12 +8,12 @@
 
 #### Connect CCS811 to pycom
 
-VCC -> 3V3
+VIN -> 3V3
 
 GND -> GND
 
-SCL -> 10ohm resistor witg 3.3v -> G16
+SCL -> G16
 
-SDA -> 10ohm resistor witg 3.3v -> G17
+SDA -> G17
 
 WAK -> GND
