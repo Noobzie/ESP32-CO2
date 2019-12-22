@@ -1,14 +1,11 @@
 from machine import I2C
 import urequests as requests
 from network import WLAN
-import RandomNumbers
 import time
 import json
 import machine
 import ubinascii
-#import adafruit_ccs811
 from time import sleep
-import Adafruit_CCS811
 import CCS811
 
     
