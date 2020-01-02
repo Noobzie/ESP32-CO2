@@ -17,11 +17,23 @@ def main():
             self.TVOC = TVOC
 
 
-    readings = readSensor()
-    #reading = reading(getHardwareId(), readings)
-    print(json.dumps(readings))
+    connection = connectToWiFi()
+    deviceId = getDeviceId()
+
+    while (True):       #Main loop
+        readings = readSensor()
+        readingsJSON = json.dumps(reading(getHardwareId(), readings[0], readings[1]))
+        if (connection.isconnected()):
+            sendReadings(readingsJSON)
+        else:
+            connection = connectToWiFi()
+            sendReadings(readingsJSON)
     
 
+
+    
+def connectToWiFi():
+    return "remove this"
     # wlan = WLAN()
     # wlan = WLAN(mode=WLAN.STA)
     # nets = wlan.scan()
@@ -34,12 +46,7 @@ def main():
     #             machine.idle() # save power while waiting
     #         print('WLAN connection succeeded!')
     #         print(wlan.ifconfig())
-    #         break
-
-    # deviceId = getDeviceId()
-
-
-    
+    #         return wlan
 
 def readSensor():
     i = 0
@@ -77,6 +84,9 @@ def getDeviceId():
     deviceId = r.text
     r.close()
     return deviceId
+
+def sendReadings(readings):
+    r = requests.request("POSTP", 'http://192.168.178.115:4040/measurements', readings, True)
     
 
 
