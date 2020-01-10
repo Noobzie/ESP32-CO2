@@ -68,7 +68,7 @@ def request(method, url, data=None, json=None, headers={}, stream=None):
             s.write(headers[k])
             s.write(b"\r\n")
         if json is not None:
-            assert data is None
+            #assert data is None
             import ujson
             data = ujson.dumps(json)
             s.write(b"Content-Type: application/json\r\n")

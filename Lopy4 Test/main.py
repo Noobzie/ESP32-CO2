@@ -20,33 +20,37 @@ def main():
     connection = connectToWiFi()
     deviceId = getDeviceId()
 
-    while (True):       #Main loop
+    index = 1
+    while (index > 0):       #Main loop
+        index = index - 1
         readings = readSensor()
-        readingsJSON = json.dumps(reading(getHardwareId(), readings[0], readings[1]))
+        x = { "id": deviceId,
+              "eCO2" : readings[0],
+              "TVOC" : readings[1]}
+        readingsJSON = json.dumps(x)
         if (connection.isconnected()):
+            print("Connection is OK now sending:")
+            print(readingsJSON)
             sendReadings(readingsJSON)
         else:
             connection = connectToWiFi()
             sendReadings(readingsJSON)
     
 
-
-    
 def connectToWiFi():
-    return "remove this"
-    # wlan = WLAN()
-    # wlan = WLAN(mode=WLAN.STA)
-    # nets = wlan.scan()
-    # for net in nets:
-    #     print(net.ssid)
-    #     if net.ssid == 'LoraNet':
-    #         print('Network found!')
-    #         wlan.connect(net.ssid, auth=(net.sec, '12345678'), timeout=5000)
-    #         while not wlan.isconnected():
-    #             machine.idle() # save power while waiting
-    #         print('WLAN connection succeeded!')
-    #         print(wlan.ifconfig())
-    #         return wlan
+    wlan = WLAN()
+    wlan = WLAN(mode=WLAN.STA)
+    nets = wlan.scan()
+    for net in nets:
+        print(net.ssid)
+        if net.ssid == 'ENTER THE ID':
+            print('Network found!')
+            wlan.connect(net.ssid, auth=(net.sec, 'ENTER THE PASSWORD'), timeout=5000)
+            while not wlan.isconnected():
+                machine.idle() # save power while waiting
+            print('WLAN connection succeeded!')
+            print(wlan.ifconfig())
+            return wlan
 
 def readSensor():
     i = 0
@@ -74,19 +78,18 @@ def getHardwareId():
     return ubinascii.hexlify(machine.unique_id()).decode('utf-8')
 
 def getDeviceId():
+    print("Y U NO WORK")
     hardWareId = {"hardwareId": getHardwareId()}
     hardwareIdJson = json.dumps(hardWareId)
     print(hardwareIdJson)
-    r = requests.request("GET", 'http://192.168.178.115:4040/deviceid', hardwareIdJson, True)
+    r = requests.post('http://192.168.1.159:4040/getNewId', headers = {'content-type': 'application/json'}, data = hardwareIdJson).json()
+    #r = requests.request("POST", 'http://192.168.1.159:4040/getNewId', hardwareIdJson, True, json=hardwareIdJson)
     print(r)
-    print(r.content)
-    print(r.text)
-    deviceId = r.text
-    r.close()
+    deviceId = r
     return deviceId
 
 def sendReadings(readings):
-    r = requests.request("POSTP", 'http://192.168.178.115:4040/measurements', readings, True)
+    r = requests.post('http://192.168.1.159:4040/sendMeasurements', headers = {'content-type': 'application/json'}, data = readings)
     
 
 
